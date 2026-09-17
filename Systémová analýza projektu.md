@@ -1,67 +1,46 @@
 
-# Názov projektu (+ meno riešiteľa)
-- **Názov projektu**: [Názov projektu]
-- **Meno riešiteľa**: [Meno študenta]
-- **Login**: [Login]
-
----
-
-## Seznam kapitol - částí projektu
-1. Úvod
-2. Dôvod a okolnosti zavedenia riešenia
-3. Popis projektu (slovné zadanie, popis od zákazníka)
-4. Analýza požiadaviek
-5. Systémové požiadavky (FURPS)
-6. Kritické situácie
-7. Hranice systému
-8. Kontext prostredia
-9. Charakteristika aktérov
-10. Use Case diagram
-11. Scenáre (Implementácia Use Case)
-12. Sekvenčný diagram
-13. Triedny diagram
-14. Aktivitný diagram — *bonus*
-15. BPMN diagram — *bonus*
-16. Wireframe kľúčových obrazoviek — *bonus*
-17. Záver
-
----
-
-## Popis zmien v dokumentu
-Tento dokument reflektuje všetky zmeny a vylepšenia, ktoré boli vykonané v predchádzajúcich verziách, ako aj aktualizácie implementácie a návrhu systému.
+# Efektový DSP Multipedal pre Gitaru (Filip Rechtorík)
+- **Názov projektu**: Efektový DSP Multipedal pre Gitaru
+- **Meno riešiteľa**: Filip Rechtorík
 
 ---
 
 ## Dôvod a okolnosti zavedenia riešenia
-Tento projekt je navrhnutý s cieľom zlepšiť proces diagnostiky automobilov. Zavedenie jednotného systému pre diagnostiku umožní mechanikom a technikom prístup k rôznym riadiacim jednotkám a ich diagnostickým kódom bez nutnosti používať rozličné doplnkové softvéry. Cieľom je zvýšiť efektivitu, minimalizovať chyby a ušetriť čas pri diagnostike vozidiel.
+Klasický gitarový pedalboard so samostatnými efektovými pedálmi prináša viacero praktických nevýhod — zložitú kabeláž, potrebu vlastného napájania pre každý pedál a nutnosť počas vystúpenia opakovane sa skláňať a prepínať jednotlivé efekty nohou. Cieľom projektu je tieto nevýhody odstrániť spojením viacerých efektov do jedného DSP pedála, ktorý zároveň umožňuje meniť ich parametre na diaľku — priamo z gitary alebo z telefónu. Hráč tak získa väčšie pohodlie a rýchlejší prístup k nastaveniam počas hrania, bez zbytočného fyzického zaťaženia.
 
 ---
 
 ## Slovné zadanie, popis projektu od zákazníka
-Cieľom tohto projektu je vytvoriť prehľadný a intuitívny diagnostický systém pre správu automobilov. Tento systém bude slúžiť na diagnostiku závad na vozidlách a analýzu dát z riadiacich jednotiek (ECU). Funkcionality budú zahŕňať: čítanie diagnostických kódov, zobrazovanie meraných hodnôt, testovanie aktuátorov a predikciu údržbových upozornení.
+Pedál využíva viacero známych gitarových efektov — Wah, Pitch Shift a tretí efekt (výber zatiaľ nie je finálny) — spolu s noise gate, čím dosahuje takmer profesionálnu úroveň spracovania zvuku. Spracovanie zvuku zabezpečuje DSP (Digital Signal Processing) realizované pomocou Daisy Seed. Pedál sa ovláda otočnými potenciometrami a footswitchmi na výber efektu a úpravu jeho intenzity — tieto možnosti však nie sú obmedzené len na fyzický pedál, ale je možné ich ovládať aj na diaľku. Práve to je hlavnou inováciou tohto projektu.
 
 ---
 
-## Seznam modulů projektu a jejich významných atributů
-1. **Modul pre čítanie diagnostických kódov (DTC)**
-   - Atribúty: diagnostické kódy, stav vozidla, počet chýb
-   - Unikátna identifikácia objektov: Kód chyby, ID vozidla
+## Zoznam modulov projektu a ich významných atribútov
 
-2. **Užívateľské rozhranie (UI)**
-   - Atribúty: grafické rozhranie, interaktívne prvky
-   - Unikátna identifikácia objektov: ID užívateľa, ID diagnostického nástroja
+1. **Fyzický pedál
 
-3. **Komunikačný modul**
-   - Atribúty: pripojenie k OBD-II, synchronizácia s externými zariadeniami
-   - Unikátna identifikácia objektov: Komunikačné protokoly, ID zariadení
+- Atribúty: stav footswitchov (aktívny efekt), poloha potenciometrov/expression pedálu
+- Unikátna identifikácia objektov: pedal.id
 
-4. **Dátový analytický modul**
-   - Atribúty: analýza dát, predikčné modely
-   - Unikátna identifikácia objektov: Predikčný model, ID analýzy
+2. **Guitar Mounted Remote
 
-5. **Modul pre aktualizácie softvéru**
-   - Atribúty: verzia softvéru, súbor na aktualizáciu
-   - Unikátna identifikácia objektov: Verzia systému, ID aktualizácie
+- Atribúty: typ pripojenia (Bluetooth), stav pripojenia, stav ovládacích prvkov (gombíky)
+- Unikátna identifikácia objektov: guitarRemote.id
+
+3. **Webová aplikácia (UI)
+
+- Atribúty: vybraný profil nástroja, aktuálne zobrazené hodnoty parametrov
+- Unikátna identifikácia objektov: webapp.id
+
+4. **DSP / efektový modul
+
+- Atribúty: aktívny efekt, hodnoty parametrov efektu, stav noise gate
+- Unikátna identifikácia objektov: effect.id
+
+5. **Profily nástrojov
+
+- Atribúty: názov profilu (typ gitary/basy), predvolené hodnoty parametrov pre daný profil
+- Unikátna identifikácia objektov: profile.id
 
 ---
 
@@ -158,56 +137,6 @@ Systém bude implementovaný ako samostatné riešenie, ktoré nebude závislé 
 - Zobraziť triedy ako `Vehicle`, `ECUDiagnosticTool`, `OBD2_Codes` a ich vzťahy.
 
 ---
-
-## Aktivitný diagram — *bonus*
-
-> Nie je povinný. Za dobre spracovaný diagram sú **plusové body**.
-
-Vezmite **jeden zložitejší scenár** z kapitoly *Scenáre* (ideálne taký, kde je
-vetvenie alebo viac krokov za sebou) a rozkreslite jeho tok ako **diagram aktivít**:
-
-- počiatočný uzol → akcie → **rozhodovací uzol** s podmienkami `[…]` → koncový uzol
-- ak v scenári niečo prebieha súbežne, použite **fork / join**
-- ak je pri akcii jasné, kto ju vykonáva (mechanik vs systém), rozdeľte akcie do **plaveckých dráh**
-
-Notácia a hotový príklad: [Úvod do softvérového inžinierstva → Diagram aktivít](/citacka.html?s=oop&doc=uvod-do-si#diagram-aktivit)
-
----
-
-## BPMN diagram — *bonus*
-
-> Nie je povinný. Za dobre spracovaný diagram sú **plusové body**.
-
-BPMN nie je súčasťou UML — je to štandard na modelovanie **biznis procesu**, do
-ktorého systém zapadá. Ukážte **jeden proces** okolo vášho systému (napr. „príjem
-vozidla do servisu a diagnostika") a zamerajte sa na:
-
-- **bazén a dráhy** — kto je účastník (zákazník, mechanik, systém)
-- **typy úloh** — čo robí človek cez systém (*user task*) vs čo systém automaticky (*service task*)
-- **brány** — kde sa proces vetví (`×` exkluzívna brána)
-- **štartovú a koncové udalosti**
-
-Notácia, typy úloh a hotový príklad: [Úvod do softvérového inžinierstva → BPMN](/citacka.html?s=oop&doc=uvod-do-si#bpmn-procesny-pohlad)
-
----
-
-## Wireframe kľúčových obrazoviek — *bonus*
-
-> Nie je povinný. Za dobre spracovaný wireframe sú **plusové body**.
-
-Načrtnite **2–3 kľúčové obrazovky** vášho systému — nízkofidelitný wireframe
-(rozloženie prvkov, žiadne farby ani finálny dizajn). Každú obrazovku viažte na
-konkrétny use case (napr. formulár novej žiadanky = UC „vytvoriť žiadanku",
-zoznam so stavmi = UC „sledovať stav").
-
-Toto je zároveň **návrh aplikácie, ktorú budete postupne implementovať** na
-hodinách programovania — oplatí sa navrhnúť niečo, čo naozaj chcete mať hotové.
-
-Úrovne (wireframe → mockup → prototyp) a hotový príklad:
-[Úvod do softvérového inžinierstva → Wireframe a mockup](/citacka.html?s=oop&doc=uvod-do-si#wireframe-a-mockup)
-
----
-
 
 # Rozšírenie FURPS analýzy pre projekt diagnostického softvéru pre automobily
 
