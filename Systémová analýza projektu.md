@@ -95,9 +95,27 @@ Pedál je samostatná jednotka, ktorá nie je závislá od iných existujúcich 
 ---
 
 ## Use Case diagram
-- **Minimálne 5 modulov a 2 aktéry**
-- Doporučené maximum: 5 modulov s využitím `include` a `extend` vzťahov.
+```mermaid
+flowchart LR
+    Hrac(["🧍 Hráč"])
+    Zvukar(["🧍 Zvukár"])
 
+    subgraph System["Multipedal — systém"]
+        UC1(("Prepnúť efekt"))
+        UC2(("Upraviť parameter\nefektu na diaľku"))
+        UC3(("Overiť bezdrôtové\npripojenie"))
+        UC4(("Vybrať profil\nnástroja"))
+        UC5(("Doladiť parametre\nprofilu"))
+        UC6(("Zapnúť pedál a obnoviť\nposledné nastavenia"))
+    end
+
+    Hrac --- UC1
+    Hrac --- UC2
+    Hrac --- UC6
+    UC2 -.include.-> UC3
+    Zvukar --- UC4
+    UC5 -.extend.-> UC4
+```
 ---
 
 ## Scenáre - konkrétna implementácia Use Case
@@ -146,11 +164,84 @@ Pedál je samostatná jednotka, ktorá nie je závislá od iných existujúcich 
 ---
 
 ## Sekvenčný diagram
-- Vytvorte sekvenčný diagram, ktorý ukáže interakcie medzi mechanikom, diagnostickým nástrojom a vozidlom.
+```mermaid
+sequenceDiagram
+    actor Hrac as Hráč
+    participant Remote as Gitarový ovládač (ESP32)
+    participant Pedal as Pedál (fyzické ovládanie)
+    participant DSP as Daisy Seed (DSP)
 
+    alt Bezdrôtové pripojenie funguje
+        Hrac->>Remote: Stlačí tlačidlo / otočí gombík
+        Remote->>Remote: Overí bezdrôtové pripojenie
+        Remote->>DSP: Odošle príkaz (prepnúť efekt / zmeniť parameter)
+        DSP->>DSP: Aktualizuje aktívny efekt / hodnotu parametra
+        DSP-->>Remote: Potvrdenie
+        Remote-->>Hrac: Potvrdenie na ovládači
+    else Pripojenie zlyhá
+        Hrac->>Pedal: Použije footswitch / potenciometer priamo na pedáli
+        Pedal->>DSP: Odošle príkaz lokálne (bez ESP32 remote)
+        DSP->>DSP: Aktualizuje efekt lokálne
+    end
+
+    DSP->>DSP: Spracuje zvuk s novým nastavením
+    Note over Hrac,DSP: Zmena sa v zvuku prejaví takmer okamžite
+```
 ---
 
 ## Triedny diagram
-- Zobraziť triedy ako `Vehicle`, `ECUDiagnosticTool`, `OBD2_Codes` a ich vzťahy.
+```mermaid
+classDiagram
+    class Pedal {
+        +String pedalId
+        +bool footswitchActive
+        +float potentiometerValue
+        +float expressionPedalValue
+        prepnutEfekt()
+        upravitParameter()
+        obnovitPoslednéNastavenia()
+    }
 
+    class GuitarRemote {
+        +String guitarRemoteId
+        +String connectionType
+        +bool connectionStatus
+        +Map controlStates
+        overitPripojenie()
+        odoslatPrikaz()
+    }
+
+    class WebApp {
+        +String webappId
+        +String selectedProfile
+        +Map currentParameterValues
+        vybratProfil()
+        doladitParametre()
+        odoslatNaPedal()
+    }
+
+    class EffectDSP {
+        +String effectId
+        +String activeEffect
+        +Map effectParameters
+        +bool noiseGateStatus
+        prepnutEfekt()
+        upravitParameter()
+        spracovatZvuk()
+    }
+
+    class InstrumentProfile {
+        +String profileId
+        +String profileName
+        +Map defaultParameterValues
+        nacitatProfil()
+        ulozitProfil()
+    }
+
+    Pedal "1" --> "1" EffectDSP : ovláda
+    GuitarRemote "1" --> "1" Pedal : ovláda na diaľku
+    WebApp "1" --> "1" Pedal : konfiguruje
+    WebApp "0..*" --> "1" InstrumentProfile : vyberá
+    InstrumentProfile "1" --> "1" EffectDSP : nastavuje predvolené hodnoty
+```
 ---
